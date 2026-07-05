@@ -1,5 +1,4 @@
 pipeline {
-
     agent any
 
     environment {
@@ -16,38 +15,25 @@ pipeline {
 
         stage('Compile') {
             steps {
-                dir('app') {
-                    sh 'mvn clean compile'
-                }
+                sh 'mvn clean compile'
             }
         }
 
         stage('Unit Test') {
             steps {
-                dir('app') {
-                    sh 'mvn test'
-                }
-            }
-            post {
-                always {
-                    junit 'app/target/surefire-reports/*.xml'
-                }
+                sh 'mvn test'
             }
         }
 
         stage('Package') {
             steps {
-                dir('app') {
-                    sh 'mvn package -DskipTests'
-                }
+                sh 'mvn package'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                dir('app') {
-                    sh "docker build -t ${IMAGE_NAME}:latest ."
-                }
+                sh "docker build -t ${IMAGE_NAME}:latest ."
             }
         }
 
@@ -60,11 +46,8 @@ pipeline {
                         passwordVariable: 'DOCKER_PASS'
                     )
                 ]) {
-
                     sh '''
-                        echo "$DOCKER_PASS" | docker login \
-                        -u "$DOCKER_USER" \
-                        --password-stdin
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                     '''
                 }
             }
@@ -75,22 +58,21 @@ pipeline {
                 sh "docker push ${IMAGE_NAME}:latest"
             }
         }
-
     }
 
     post {
 
-        success {
-            echo 'CI/CD Pipeline Completed Successfully!'
-        }
-
-        failure {
-            echo 'Pipeline Failed!'
-        }
-
         always {
             sh 'docker logout || true'
             cleanWs()
+        }
+
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+
+        failure {
+            echo 'Pipeline failed!'
         }
     }
 }
