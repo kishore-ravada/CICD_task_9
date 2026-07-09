@@ -9,7 +9,7 @@ public class HelloController {
     @GetMapping("/")
     public String home() {
 
-        return "Welcome to DevOps CI/CD Pipeline using Spring Boot, Docker and Jenkins!";
+        return "Welcome to DevOps CI/CD Pipelin,  this is the test to understand the automation !";
 
     }
 }
